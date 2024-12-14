@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Todo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TodoController extends Controller
 {
@@ -28,19 +29,28 @@ class TodoController extends Controller
 
         $request->validate([
             'task' => 'required|string|max:255',
+            'due_date' => 'nullable|date',
         ]);
+
+        $dueDate = null;
+
+        if ($request->has('due_date') && $request->due_date) {
+            $dueDate = Carbon::parse($request->due_date)->setTimezone('Asia/Manila');
+        }
 
         Todo::create([
             'task' => $request->task,
             'user_id' => Auth::id(),
+            'due_date' => $dueDate,
         ]);
 
         session()->flash('success', 'Todo added successfully!');
         return redirect()->route('todos.page');
     }
 
+
     // Update todo
-    public function update(Todo $todo)
+    public function update(Request $request, Todo $todo)
     {
         if (!Auth::check()) {
             return redirect()->route('login');
@@ -51,6 +61,11 @@ class TodoController extends Controller
         }
 
         $todo->status = $todo->status === 'completed' ? 'pending' : 'completed';
+
+        if ($request->has('task')) {
+            $todo->task = $request->task;
+        }
+
         $todo->save();
 
         session()->flash('success', 'Todo updated successfully!');
@@ -70,12 +85,14 @@ class TodoController extends Controller
 
         $request->validate([
             'task' => 'required|string|max:255',
+            'due_date' => 'nullable|date',
         ]);
 
         $todo->task = $request->task;
+        $todo->due_date = $request->due_date;
         $todo->save();
 
-        session()->flash('success', 'Edit todo successfully!');
+        session()->flash('success', 'Todo updated successfully!');
         return redirect()->route('todos.page');
     }
 

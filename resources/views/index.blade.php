@@ -7,6 +7,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    <style>
+
+    </style>
 </head>
 <body>
     <div class="container">
@@ -24,6 +27,7 @@
                 @csrf
                 <div class="input-group todo-input">
                     <input type="text" name="task" class="form-control" placeholder="Enter a new task" required>
+                    <input type="datetime-local" name="due_date" class="form-control" required>
                     <button type="submit" class="btn btn-custom">Add Todo <i class="fa-solid fa-plus"></i></button>
                 </div>
             </form>
@@ -34,12 +38,17 @@
                     <li class="{{ $todo->status == 'completed' ? 'completed' : 'pending' }}">
                         <span class="task">{{ $todo->task }}</span>
                         <span class="status">{{ ucfirst($todo->status) }}</span>
+
+
                         <form action="{{ route('todos.update', $todo) }}" method="POST" style="display:inline;">
                             @csrf
+                            @method('PUT')
+                            <input type="hidden" name="task" value="{{ $todo->task }}">
                             <button type="submit" class="btn btn-success btn-sm">
                                 @if ($todo->status == 'completed') Uncheck <i class="fa-solid fa-check"></i> @else Check <i class="fa-solid fa-check"></i> @endif
                             </button>
                         </form>
+
                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editTodoModal" data-id="{{ $todo->id }}" data-task="{{ $todo->task }}">
                             Edit <i class="fa-solid fa-pen-to-square"></i>
                         </button>
@@ -48,9 +57,13 @@
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm">Delete <i class="fa-solid fa-trash"></i></button>
                         </form>
+                        <div class="due-date">
+                            <small style="font-size: 12px;"> &nbsp; <i class="fa-regular fa-calendar"></i> {{ \Carbon\Carbon::parse($todo->due_date)->format('M d, Y g:i A') }}</small>
+                        </div>
                     </li>
                 @endforeach
             </ul>
+
         </div>
     </div>
 
@@ -62,16 +75,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editTodoForm" method="POST">
-                        @csrf
-                        <input type="hidden" name="_method" value="PUT">
-                        <input type="hidden" name="todo_id" id="todo_id">
-                        <div class="mb-3">
-                            <label for="task" class="form-label">Task</label>
-                            <input type="text" class="form-control" id="task" name="task" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="float: right">Update</button>
-                    </form>
+                <form id="editTodoForm" method="POST">
+                    @csrf
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="hidden" name="todo_id" id="todo_id">
+                    <div class="mb-3">
+                        <label for="task" class="form-label">Task</label>
+                        <input type="text" class="form-control" id="task" name="task" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="due_date" class="form-label">Due Date</label>
+                        <input type="datetime-local" class="form-control" id="due_date" name="due_date">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="float: right">Update</button>
+                </form>
                 </div>
             </div>
         </div>

@@ -16,6 +16,7 @@ class CreateTodosTable extends Migration
             $table->string('task');
             $table->enum('status', ['pending', 'completed'])->default('pending');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->dateTime('due_date')->nullable();
             $table->timestamps();
         });
     }
